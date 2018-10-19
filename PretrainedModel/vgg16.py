@@ -27,7 +27,6 @@ from keras import backend as K
 from keras.applications.imagenet_utils import decode_predictions
 from keras.applications.imagenet_utils import preprocess_input
 from keras_applications.imagenet_utils import _obtain_input_shape
-
 from keras.engine.topology import get_source_inputs
 
 
@@ -206,4 +205,5 @@ if __name__ == '__main__':
     x = preprocess_input(x)
     print('Input image shape:', x.shape)
     preds = model.predict(x)
-    print('Predicted:', decode_predictions(preds))
+    print('Predicted:', decode_predictions(preds) , '\n')
+    print('Predicted MOST Value:', decode_predictions(preds)[0][0])
