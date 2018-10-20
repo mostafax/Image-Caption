@@ -179,15 +179,15 @@ def VGG16(include_top=True, weights='imagenet',
                 dense = model.get_layer(name='fc1')
                 layer_utils.convert_dense_weights_data_format(dense, shape, 'channels_first')
 
-            if K.backend() == 'tensorflow':
+                '''if K.backend() == 'tensorflow':
                 warnings.warn('You are using the TensorFlow backend, yet you '
                               'are using the Theano '
                               'image data format convention '
                               '(`image_data_format="channels_first"`). '
                               'For best performance, set '
-                              '`image_data_format="channels_last"` in '
+                              '`image_data_for'Predicted MOST Value:', decode_predictions(preds)[0][0][2]mat="channels_last"` in '
                               'your Keras config '
-                              'at ~/.keras/keras.json.')
+                              'at ~/.keras/keras.json.')'''
     #This comment Should be Removed
     #model.layers.pop() # Get rid of the classification layer
     model.outputs = [model.layers[-1].output]
@@ -197,13 +197,15 @@ def VGG16(include_top=True, weights='imagenet',
 
 if __name__ == '__main__':
     model = VGG16(include_top=True, weights='imagenet')
-    img = cv2.imread('elephant.jpeg')
+    img = cv2.imread('cat.jpeg')
     img = cv2.resize(img, (224, 224)) 
 
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
+    # It should be alaways 224 * 224 * 3
     print('Input image shape:', x.shape)
     preds = model.predict(x)
     print('Predicted:', decode_predictions(preds) , '\n')
-    print('Predicted MOST Value:', decode_predictions(preds)[0][0])
+    print('Predicted MOST Value:', decode_predictions(preds)[0][0][1])
+    print('Predicted Presentage:for this value {}% '.format(int(decode_predictions(preds)[0][0][2]*100)))
