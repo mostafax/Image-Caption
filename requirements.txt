@@ -1,0 +1,5 @@
+Keras==2.2.4
+Keras_Applications==1.0.6
+opencv_python==3.4.3.18
+numpy==1.15.2
+progressbar2==3.38.0
