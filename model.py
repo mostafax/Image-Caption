@@ -55,7 +55,7 @@ def train_test_split(dataset):
 	ordered = sorted(dataset)
 	# return split dataset as two new sets
 
-	return set(ordered[:100]), set(ordered[100:200])
+	return set(ordered[:500]), set(ordered[500:600])
 
 # load clean descriptions into memory
 def load_clean_descriptions(filename, dataset):
