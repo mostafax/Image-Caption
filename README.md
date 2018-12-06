@@ -1,5 +1,5 @@
 # Image-caption Using End2end CNN , LSTM based Model!
- The aim of the project is to train convolutional neural networks with several hundreds of hyperparameters and apply it on a huge dataset of images (Image-Net) and combine the results of this image classifier with a recurrent neural network to generate a caption for the classified imag
+ The aim of the project is to train convolutional neural networks with several hundreds of hyperparameters and apply it on a huge dataset of images (Image-Net) and combine the results of this image classifier with a recurrent neural network to generate a caption for the classified image
  
  this model is bases on [Show and Tell: A Neural Image Caption Generator
 ](https://arxiv.org/pdf/1411.4555.pdf)
