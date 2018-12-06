@@ -19,4 +19,4 @@ python3 model.py
 ## Results
 
 The results are not bad at all! a lot of test cases gonna be so realistic, but the model still needs more training
-<img src = "https://github.com/mostafax/Image-caption/PretrainedModel/resultts.png">
+<img src = "/PretrainedModel/resultts.png">
