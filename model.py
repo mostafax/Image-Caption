@@ -5,7 +5,6 @@ from pandas import DataFrame
 from nltk.translate.bleu_score import corpus_bleu
 from pickle import load
 from keras.callbacks import ModelCheckpoint
-
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
@@ -24,99 +23,20 @@ from keras.layers import TimeDistributed
 from keras.layers import Embedding
 from keras.layers.merge import concatenate
 from keras.layers.pooling import GlobalMaxPooling2D
-
-# load doc into memory
-def load_doc(filename):
-	# open the file as read only
-	file = open(filename, 'r')
-	# read all text
-	text = file.read()
-	# close the file
-	file.close()
-	return text
-
-# load a pre-defined list of photo identifiers
-def load_set(filename):
-	doc = load_doc(filename)
-	dataset = list()
-	# process line by line
-	for line in doc.split('\n'):
-		# skip empty lines
-		if len(line) < 1:
-			continue
-		# get the image identifier
-		identifier = line.split('.')[0]
-		dataset.append(identifier)
-	return set(dataset)
-
-# split a dataset into train/test elements
-def train_test_split(dataset):
-	# order keys so the split is consistent
-	ordered = sorted(dataset)
-	# return split dataset as two new sets
-
-	return set(ordered[:500]), set(ordered[500:600])
-
-# load clean descriptions into memory
-def load_clean_descriptions(filename, dataset):
-	# load document
-	doc = load_doc(filename)
-	descriptions = dict()
-	for line in doc.split('\n'):
-		# split line by white space
-		tokens = line.split()
-		# split id from description
-		image_id, image_desc = tokens[0], tokens[1:]
-		# skip images not in the set
-		if image_id in dataset:
-			# store
-			descriptions[image_id] = 'startseq ' + ' '.join(image_desc) + ' endseq'
-	return descriptions
-
-# load photo features
-def load_photo_features(filename, dataset):
-	# load all features
-	all_features = load(open(filename, 'rb'))
-	# filter features
-	features = {k: all_features[k] for k in dataset}
-	return features
-
-# fit a tokenizer given caption descriptions
-def create_tokenizer(descriptions):
-	lines = list(descriptions.values())
-	tokenizer = Tokenizer()
-	tokenizer.fit_on_texts(lines)
-	return tokenizer
-
-# create sequences of images, input sequences and output words for an image
-def create_sequences(tokenizer, desc, image, max_length):
-	Ximages, XSeq, y = list(), list(),list()
-	vocab_size = len(tokenizer.word_index) + 1
-	# integer encode the description
-	seq = tokenizer.texts_to_sequences([desc])[0]
-	# split one sequence into multiple X,y pairs
-	for i in range(1, len(seq)):
-		# select
-		in_seq, out_seq = seq[:i], seq[i]
-		# pad input sequence
-		in_seq = pad_sequences([in_seq], maxlen=max_length)[0]
-		# encode output sequence
-		out_seq = to_categorical([out_seq], num_classes=vocab_size)[0]
-		# store
-		Ximages.append(image)
-		XSeq.append(in_seq)
-		y.append(out_seq)
-	# Ximages, XSeq, y = array(Ximages), array(XSeq), array(y)
-	return [Ximages, XSeq, y]
+from text_procces import load_clean_descriptions , load_photo_features ,train_test_split , load_doc , load_set
+from token_preperation import create_sequences , create_tokenizer , word_for_id
 
 # define the captioning model
 def define_model(vocab_size, max_length):
 	# feature extractor (encoder)
 	inputs1 = Input(shape=(7, 7, 512))
 	fe1 = GlobalMaxPooling2D()(inputs1)
+
 	fe2 = Dense(128, activation='relu')(fe1)
+
 	fe3 = RepeatVector(max_length)(fe2)
-	# embedding
+
+	# embedding encoder
 	inputs2 = Input(shape=(max_length,))
 	emb2 = Embedding(vocab_size, 50, mask_zero=True)(inputs2)
 	emb3 = LSTM(256, return_sequences=True)(emb2)
@@ -129,19 +49,14 @@ def define_model(vocab_size, max_length):
 	outputs = Dense(vocab_size, activation='softmax')(lm3)
 	# Merging the models together [image, seq] [word]
 	model = Model(inputs=[inputs1, inputs2], outputs=outputs)
-	#checkpointer = ModelCheckpoint(filepath='weghits/weghits.now.h5',monitor='val_acc', verbose=1, save_best_only=True)
-	#his = ModelCheckpoint('/weghits/hello.h5',monitor='val_acc', verbose=1, save_best_only=True)
-	#list_his= [his]
+
 	print("Wights loaded")
 
 	model.load_weights('weghits/weghits.now.h5')
 	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-	#model.save_weights('weghits/weghits.now.h5')
-
-
-	#print(model.summary())
-	#plot_model(model, show_shapes=True, to_file='plot.png')
+	print(model.summary())
 	return model
+
 
 # data generator, intended to be used in a call to model.fit_generator()
 def data_generator(descriptions, features, tokenizer, max_length, n_step):
@@ -166,12 +81,6 @@ def data_generator(descriptions, features, tokenizer, max_length, n_step):
 			# yield this batch of samples to the model
 			yield [[array(Ximages), array(XSeq)], array(y)]
 
-# map an integer to a word
-def word_for_id(integer, tokenizer):
-	for word, index in tokenizer.word_index.items():
-		if index == integer:
-			return word
-	return None
 
 # generate a description for an image
 def generate_desc(model, tokenizer, photo, max_length):
@@ -198,7 +107,8 @@ def generate_desc(model, tokenizer, photo, max_length):
 		if word == 'endseq':
 			break
 	return in_text
-import cv2
+
+
 # evaluate the skill of the model
 def evaluate_model(model, descriptions, photos, tokenizer, max_length):
 	actual, predicted = list(), list()
@@ -211,7 +121,7 @@ def evaluate_model(model, descriptions, photos, tokenizer, max_length):
 		predicted.append(yhat.split())
 		print('Actual:    %s' % desc)
 		print('Predicted: %s' % yhat)
-		if len(actual) >= 5:
+		if len(actual) >= 3:
 			break
 	# calculate BLEU score
 	bleu = corpus_bleu(actual, predicted)
@@ -226,11 +136,11 @@ train, test = train_test_split(dataset)
 # descriptions
 train_descriptions = load_clean_descriptions('descriptions.txt', train)
 test_descriptions = load_clean_descriptions('descriptions.txt', test)
-print('Descriptions: train=%d, test=%d' % (len(train_descriptions), len(test_descriptions)))
+#print('Descriptions: train=%d, test=%d' % (len(train_descriptions), len(test_descriptions)))
 # photo features
 train_features = load_photo_features('features.pkl', train)
 test_features = load_photo_features('features.pkl', test)
-print('Photos: train=%d, test=%d' % (len(train_features), len(test_features)))
+#print('Photos: train=%d, test=%d' % (len(train_features), len(test_features)))
 # prepare tokenizer
 tokenizer = create_tokenizer(train_descriptions)
 vocab_size = len(tokenizer.word_index) + 1
@@ -260,18 +170,3 @@ for i in range(n_repeats):
 	# evaluate model on training data
 	train_score = evaluate_model(model, train_descriptions, train_features, tokenizer, max_length)
 	test_score = evaluate_model(model, test_descriptions, test_features, tokenizer, max_length)
-	# store
-	train_results.append(train_score)
-	test_results.append(test_score)
-	print('>%d: train=%f test=%f' % ((i+1), train_score, test_score))
-	#print('>%d: train=%f' % ((i+1), train_score))
-	print(train_descriptions[i])
-
-
-	#img = cv2.imread('/home/mostafa/Desktop/Fimal Model/Flicker8k_Dataset/1045521051_108ebc19be.jpg')
-
-	#cv2.imshow('Test',img)
-	#cv2.waitKey(0)
-	#cv2.destroyAllWindows()
-
-# save results to file

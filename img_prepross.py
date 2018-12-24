@@ -6,12 +6,13 @@ from keras.preprocessing.image import img_to_array
 from keras.applications.vgg16 import preprocess_input
 from keras.layers import Input
 
+
 # extract features from each photo in the directory
 def extract_features(directory):
 	# load the model
 	in_layer = Input(shape=(224, 224, 3))
 	model = VGG16(include_top=False, input_tensor=in_layer)
-	print(model.summary())
+	#print(model.summary())
 	# extract features from each photo
 	features = dict()
 	for name in listdir(directory):
