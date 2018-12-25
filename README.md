@@ -32,7 +32,7 @@ This project is an implementation of the [Show and Tell](https://arxiv.org/pdf/1
 ## Dataset
 - Dataset used is Flicker8k each image have 5 captions.
 - you can request data from here [Flicker8k]
-(https://forms.illinois.edu/sec/1713398).
+(https://forms.illinois.edu/sec/1713398).<br>
 **Sample of the data used**
 <img src = "/PretrainedModel/dayaset.png">
 
