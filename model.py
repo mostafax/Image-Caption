@@ -26,6 +26,7 @@ from keras.layers.pooling import GlobalMaxPooling2D
 from text_procces import load_clean_descriptions , load_photo_features ,train_test_split , load_doc , load_set
 from token_preperation import create_sequences , create_tokenizer , word_for_id
 
+
 # define the captioning model
 def define_model(vocab_size, max_length):
 	# feature extractor (encoder)
@@ -107,8 +108,10 @@ def generate_desc(model, tokenizer, photo, max_length):
 		if word == 'endseq':
 			break
 	return in_text
+from scipy.misc import imshow
 
 
+import cv2
 # evaluate the skill of the model
 def evaluate_model(model, descriptions, photos, tokenizer, max_length):
 	actual, predicted = list(), list()
@@ -121,16 +124,21 @@ def evaluate_model(model, descriptions, photos, tokenizer, max_length):
 		predicted.append(yhat.split())
 		print('Actual:    %s' % desc)
 		print('Predicted: %s' % yhat)
-		if len(actual) >= 3:
+		im = cv2.imread('Flickr8K_Data/'+key+'.jpg')
+		cv2.imshow('ff',im)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+
+		if len(actual) >= 4:
 			break
 	# calculate BLEU score
 	bleu = corpus_bleu(actual, predicted)
 	return bleu
 
-# load dev set
+# load data set
 filename = 'Flickr8k_text/Flickr_8k.devImages.txt'
 dataset = load_set(filename)
-print('Dataset: %d' % len(dataset))
+#print('Dataset: %d' % len(dataset))
 # train-test split
 train, test = train_test_split(dataset)
 # descriptions
@@ -144,10 +152,10 @@ test_features = load_photo_features('features.pkl', test)
 # prepare tokenizer
 tokenizer = create_tokenizer(train_descriptions)
 vocab_size = len(tokenizer.word_index) + 1
-print('Vocabulary Size: %d' % vocab_size)
+#print('Vocabulary Size: %d' % vocab_size)
 # determine the maximum sequence length
 max_length = max(len(s.split()) for s in list(train_descriptions.values()))
-print('Description Length: %d' % max_length)
+#print('Description Length: %d' % max_length)
 
 # define experiment
 model_name = 'Finalmodel'
@@ -164,8 +172,8 @@ for i in range(n_repeats):
 	model = define_model(vocab_size, max_length)
 
 	# fit model
-	model.fit_generator(data_generator(train_descriptions, train_features, tokenizer, max_length, n_photos_per_update), steps_per_epoch=n_batches_per_epoch, epochs=n_epochs, verbose=verbose)
-	model.save_weights('weghits/weghits.now.h5')
+	#model.fit_generator(data_generator(train_descriptions, train_features, tokenizer, max_length, n_photos_per_update), steps_per_epoch=n_batches_per_epoch, epochs=n_epochs, verbose=verbose)
+	#model.save_weights('weghits/weghits.now.h5')
 	print("New Weight saved")
 	# evaluate model on training data
 	train_score = evaluate_model(model, train_descriptions, train_features, tokenizer, max_length)
