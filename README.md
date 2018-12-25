@@ -24,6 +24,7 @@ python3 model.py
 The results are not bad at all! a lot of test cases gonna be so realistic, but the model still needs more training
 <img src = "/PretrainedModel/r1.png">
 <img src = "/PretrainedModel/r2.png">
+
 ## Paper
 This project is an implementation of the [Show and Tell](https://arxiv.org/pdf/1411.4555.pdf), published 2015.
 
@@ -33,6 +34,7 @@ This project is an implementation of the [Show and Tell](https://arxiv.org/pdf/1
 (https://forms.illinois.edu/sec/1713398).
 **Sample of the data used**
 <img src = "/PretrainedModel/dayaset.png">
+
 ## Model Used
 <img src = "/PretrainedModel/model.png">
 
