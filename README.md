@@ -1,6 +1,7 @@
 # Image-caption Using End2end CNN , LSTM based Model!
-- The aim of the project is to generate a caption for images.<br>
+<h3>- The aim of the project is to generate a caption for images.<br>
  Each image has a story, Image Captioning narrates it.
+</h3>
 <img src = "/PretrainedModel/Out.png">
 
  
